@@ -1,0 +1,5 @@
+
+login
+
+curl -X POST "http://localhost:3000/login?username=Melanie&password=a1b2c3"
+curl -X POST "http://localhost:3000/login"
