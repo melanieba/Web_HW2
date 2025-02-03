@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const db = require('../utils/db');
@@ -50,5 +51,30 @@ router.get('/private', async (req, res) => {
     res.send(playLists);
 });
 
+router.post('/:name/tracks', async (req, res) => {
+    const authToken = req.cookies.authToken;
+    if (!authToken) {
+        return res.status(401).json({ message: "Not authorized" });
+    }
+    
+    const username = await db.getUserNameByAuthToken(authToken);
+    if (!username) {
+        return res.status(401).json({ message: "Session expired or invalid authentication token" }); // ?
+    }
+
+    const trackName = req.body.trackName;
+    const playlistName = req.params.name; // user doesn't send playlistName, it's part of the route
+
+    if (!trackName) {
+        return res.status(400).json({ message: "Missing required field: trackName" });
+    }
+
+    try {
+        await db.addTrackToPlaylist(username, playlistName, trackName);  // why do i need to pass username
+        res.status(200).json({ message: "Track added successfully" });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
+});
 
 module.exports = router;

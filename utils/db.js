@@ -1,3 +1,4 @@
+
 const mongodb = require('mongodb');
 
 const mongoDBServerUrl = 'mongodb://localhost:27017';
@@ -85,7 +86,37 @@ async function findPrivatePlaylists(username) {
     });
 }
 
+// only if they created the playlist:
+
+// add track within a playlist
+
+async function addTrackToPlaylist(username, playlistName, trackName) {
+    return await sendCommand(async (db) => {
+        let playlist = await db.collection(playlistsCollectionName).findOne({ name: playlistName });
+        if (!playlist) {
+            throw new Error('Playlist not found');
+        }
+
+        // i thought auth checks happen in router file -> only authToken validation in router? 
+        if (playlist.creatorUserName !== username) {
+            throw new Error('Only the creator can modify this playlist');
+        }
+
+        // tracks with the same name can exist
+        let newTrack = { name: trackName, tags: [] };
+
+        return await db.collection(playlistsCollectionName).updateOne(
+            { name: playlistName },
+            { $push: { tracks: newTrack } }
+        );
+    });
+}
+
+// remove track within a playlist
+
+// reorder tracks within a playlist
+
 module.exports = {
     storeNewUser, findUserByUserName, storeLogin, getUserNameByAuthToken, deleteLogin,
-    storePlaylist, getPlaylistByName, findPublicPlaylists, findPrivatePlaylists
+    storePlaylist, getPlaylistByName, findPublicPlaylists, findPrivatePlaylists, addTrackToPlaylist
 };

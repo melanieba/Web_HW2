@@ -1,6 +1,6 @@
+
 //signup
 curl -X POST --data "username=Melanie&password=a1b2c3" http://localhost:3000/signup
-
 
 //login
 curl -X POST --data "username=Melanie&password=a1b2c3" http://localhost:3000/login
@@ -18,3 +18,6 @@ curl -X POST  --data "name=playlist2&isPrivate=False" --cookie "authToken=9c7533
 
 curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/public
 curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/private
+
+curl -X POST --data "playlistName=playlist1&trackName=abcd" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/playlist1/tracks
+
