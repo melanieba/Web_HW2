@@ -1,18 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../utils/db');
+const auth = require('../utils/auth');
 
 router.get('/', async (req, res) => {
 
-    const authToken = req.cookies.authToken;
-    if (!authToken) {
-        res.status(401).send({ message: "Not authorized" });
-        return;
-    }
-
-    let userName = await db.getUserNameByAuthToken(authToken);
+    let userName = await auth.getLoggedUserName(req, res);
     if (!userName) {
-        res.status(401).send({ message: "Wrong auth token" });
         return;
     }
 

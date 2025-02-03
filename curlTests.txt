@@ -6,8 +6,15 @@ curl -X POST --data "username=Melanie&password=a1b2c3" http://localhost:3000/sig
 curl -X POST --data "username=Melanie&password=a1b2c3" http://localhost:3000/login
 
 //profile
-curl --cookie "authToken=0d6e42bd-280a-4988-92c3-c5fa04258d85" http://localhost:3000/profile
+curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/profile
 
 //logout
 curl -X POST --cookie "authToken=TBD" http://localhost:3000/logout
 
+
+//playlists
+curl -X POST  --data "name=playlist1&isPrivate=True" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist
+curl -X POST  --data "name=playlist2&isPrivate=False" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist
+
+curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/public
+curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/private

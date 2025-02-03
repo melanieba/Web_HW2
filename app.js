@@ -17,6 +17,7 @@ app.use('/signup', require('./routes/signup'));
 app.use('/login', require('./routes/login'));
 app.use('/logout', require('./routes/logout'));
 app.use('/profile', require('./routes/profile'));
+app.use('/playlist', require('./routes/playlist'));
 
 
 // catch 404 and forward to error handler

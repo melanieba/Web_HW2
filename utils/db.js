@@ -5,6 +5,7 @@ const dbName = 'hw2db';
 
 const usersCollectionName = 'users';
 const loginsCollectionName = 'logins';
+const playlistsCollectionName = 'playlists';
 
 async function sendCommand(dbCommand) {
     const client = new mongodb.MongoClient(mongoDBServerUrl);
@@ -53,4 +54,38 @@ async function deleteLogin(authToken) {
     });
 }
 
-module.exports = { storeNewUser, findUserByUserName, storeLogin, getUserNameByAuthToken, deleteLogin };
+async function storePlaylist(creatorUserName, playlistName, isPrivate, tracks) {
+    let newPlaylist = {
+        name: playlistName,
+        creatorUserName: creatorUserName,
+        isPrivate: isPrivate,
+        tracks: tracks
+    };
+
+    return await sendCommand(async (db) => {
+        return await db.collection(playlistsCollectionName).insertOne(newPlaylist);
+    });
+}
+
+async function getPlaylistByName(playlistName) {
+    return await sendCommand(async (db) => {
+        return await db.collection(playlistsCollectionName).findOne({ name: playlistName })
+    });
+}
+
+async function findPublicPlaylists() {
+    return await sendCommand(async (db) => {
+        return (await db.collection(playlistsCollectionName).find({ isPrivate: false })).toArray();
+    });
+}
+
+async function findPrivatePlaylists(username) {
+    return await sendCommand(async (db) => {
+        return (await db.collection(playlistsCollectionName).find({ creatorUserName: username, isPrivate: true })).toArray();
+    });
+}
+
+module.exports = {
+    storeNewUser, findUserByUserName, storeLogin, getUserNameByAuthToken, deleteLogin,
+    storePlaylist, getPlaylistByName, findPublicPlaylists, findPrivatePlaylists
+};
