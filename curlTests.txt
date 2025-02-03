@@ -1,5 +1,13 @@
+//signup
+curl -X POST --data "username=Melanie&password=a1b2c3" http://localhost:3000/signup
 
-login
 
-curl -X POST "http://localhost:3000/login?username=Melanie&password=a1b2c3"
-curl -X POST "http://localhost:3000/login"
+//login
+curl -X POST --data "username=Melanie&password=a1b2c3" http://localhost:3000/login
+
+//profile
+curl --cookie "authToken=0d6e42bd-280a-4988-92c3-c5fa04258d85" http://localhost:3000/profile
+
+//logout
+curl -X POST --cookie "authToken=TBD" http://localhost:3000/logout
+
