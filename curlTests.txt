@@ -16,8 +16,15 @@ curl -X POST --cookie "authToken=TBD" http://localhost:3000/logout
 curl -X POST  --data "name=playlist1&isPrivate=True" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist
 curl -X POST  --data "name=playlist2&isPrivate=False" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist
 
+curl -X PUT --data "playlistName=playlist1&isPrivate=false" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/flag
+
 curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/public
 curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/private
 
-curl -X POST --data "playlistName=playlist1&trackName=abcd" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/playlist1/tracks
+// add track
+curl -X POST --data "playlistName=playlist1&trackName=abcd&artistName=lala" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track
+curl -X POST --data "playlistName=playlist1&trackName=aacd&artistName=lala" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track
 
+curl -X DELETE --data "playlistName=playlist1&trackName=abcd&artistName=lala" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track
+
+curl -X PUT --data "playlistName=playlist1" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/reorder

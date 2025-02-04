@@ -68,9 +68,9 @@ async function storePlaylist(creatorUserName, playlistName, isPrivate, tracks) {
     });
 }
 
-async function getPlaylistByName(playlistName) {
+async function getPlaylistByName(playlistName, userName) {
     return await sendCommand(async (db) => {
-        return await db.collection(playlistsCollectionName).findOne({ name: playlistName })
+        return await db.collection(playlistsCollectionName).findOne({ name: playlistName, creatorUserName: userName });
     });
 }
 
@@ -86,37 +86,48 @@ async function findPrivatePlaylists(username) {
     });
 }
 
-// only if they created the playlist:
-
-// add track within a playlist
-
-async function addTrackToPlaylist(username, playlistName, trackName) {
+async function updatePlaylistFlag(userName, playlistName, isPrivate) {
     return await sendCommand(async (db) => {
-        let playlist = await db.collection(playlistsCollectionName).findOne({ name: playlistName });
-        if (!playlist) {
-            throw new Error('Playlist not found');
-        }
-
-        // i thought auth checks happen in router file -> only authToken validation in router? 
-        if (playlist.creatorUserName !== username) {
-            throw new Error('Only the creator can modify this playlist');
-        }
-
-        // tracks with the same name can exist
-        let newTrack = { name: trackName, tags: [] };
-
-        return await db.collection(playlistsCollectionName).updateOne(
-            { name: playlistName },
-            { $push: { tracks: newTrack } }
-        );
+        return await db.collection(playlistsCollectionName).updateOne({
+            name: playlistName, creatorUserName: userName
+        }, { $set: { isPrivate: isPrivate } });
     });
 }
 
-// remove track within a playlist
+// tracks
 
-// reorder tracks within a playlist
+async function addTrackToPlaylist(userName, playlistName, trackName, artistName) {
+    return await sendCommand(async (db) => {
+        let newTrack = { name: trackName, tags: [], artist: artistName };
+
+        return await db.collection(playlistsCollectionName).updateOne({
+            name: playlistName, creatorUserName: userName
+        }, {
+            $push: { tracks: newTrack }
+        });
+    });
+}
+
+async function deleteTrackToPlaylist(userName, playlistName, trackName, artistName) {
+    return await sendCommand(async (db) => {
+        return await db.collection(playlistsCollectionName).updateOne({
+            name: playlistName, creatorUserName: userName
+        }, {
+            $pull: { tracks: { name: trackName, artist: artistName } },
+        });
+    });
+}
+
+async function updatePlaylistTracks(userName, playlistName, newTracks) {
+    return await sendCommand(async (db) => {
+        return await db.collection(playlistsCollectionName).updateOne({
+            name: playlistName, creatorUserName: userName
+        }, { $set: { tracks: newTracks } });
+    });
+}
 
 module.exports = {
     storeNewUser, findUserByUserName, storeLogin, getUserNameByAuthToken, deleteLogin,
-    storePlaylist, getPlaylistByName, findPublicPlaylists, findPrivatePlaylists, addTrackToPlaylist
+    storePlaylist, getPlaylistByName, findPublicPlaylists, findPrivatePlaylists, addTrackToPlaylist, deleteTrackToPlaylist,
+    updatePlaylistTracks, updatePlaylistFlag
 };
