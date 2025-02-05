@@ -7,6 +7,7 @@ const dbName = 'hw2db';
 const usersCollectionName = 'users';
 const loginsCollectionName = 'logins';
 const playlistsCollectionName = 'playlists';
+const votesCollectionName = 'votes';
 
 async function sendCommand(dbCommand) {
     const client = new mongodb.MongoClient(mongoDBServerUrl);
@@ -126,8 +127,37 @@ async function updatePlaylistTracks(userName, playlistName, newTracks) {
     });
 }
 
+async function getVote(playlistName, creatorUserName, trackName, artistName, tag, voterName) {
+    return await sendCommand(async (db) => {
+        return await db.collection(votesCollectionName).findOne({ 
+            playlistName: playlistName, 
+            creatorUserName: creatorUserName, 
+            trackName: trackName, 
+            artistName: artistName, 
+            tag: tag, 
+            voterName: voterName
+        });
+    });
+}
+
+async function storeVote(playlistName, creatorUserName, trackName, artistName, tag, voterName, upVote) {
+    let newVote = {
+        playlistName: playlistName,
+        creatorUserName, creatorUserName, 
+        trackName: trackName, 
+        artistName: artistName,
+        tag: tag, 
+        voterName: voterName,
+        upVote: upVote
+    };
+
+    return await sendCommand(async (db) => {
+        return await db.collection(votesCollectionName).insertOne(newVote);
+    });
+}
+
 module.exports = {
     storeNewUser, findUserByUserName, storeLogin, getUserNameByAuthToken, deleteLogin,
     storePlaylist, getPlaylistByName, findPublicPlaylists, findPrivatePlaylists, addTrackToPlaylist, deleteTrackToPlaylist,
-    updatePlaylistTracks, updatePlaylistFlag
+    updatePlaylistTracks, updatePlaylistFlag, getVote, storeVote
 };

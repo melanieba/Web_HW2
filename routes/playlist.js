@@ -192,13 +192,6 @@ router.put('/track/reorder', async (req, res) => {
 });
 
 router.post('/track/tag', async (req, res) => {
-    /*
-    Find playlist
-    Validation all of them + tag name should be there in params
-    Find track
-    Add to track a new tag
-    Call db.updateTracks, give all tracks to not rewrite
-    */
     const authToken = req.cookies.authToken;
     if (!authToken) {
         return res.status(401).json({ message: "Not authorized" });
@@ -248,12 +241,60 @@ router.post('/track/tag', async (req, res) => {
 
 /*
 Upvote or downvote a tag for a specific track. Each user can only vote on a specific tag+track once.
-Post playlist/track/tag/vote
-Make new collection “votes”
 Call db getVote and give sames params except for upvote
 If something returns, then error that you can’t vote twice
-Every time someone votes, call in db storeVote
-Stores object that has playlistName, creatorUserName, trackName, artistName, voterUserName (from cookies), upvote (bool) -> 1 vote
 */
+router.post('/track/tag/vote', async (req, res) => {
+    // get voterName from cookies
+    const authToken = req.cookies.authToken;
+    if (!authToken) {
+        return res.status(401).json({ message: "Not authorized" });
+    }
+
+    const voterName = await db.getUserNameByAuthToken(authToken);
+    if (!voterName) {
+        return res.status(401).json({ message: "Session expired or invalid authentication token" }); 
+    }
+
+    const { playlistName, creatorUserName, trackName, artistName, tagName, upVote } = req.body;
+    if (!playlistName || !creatorUserName || !trackName || !artistName || !tagName || !upVote) {
+        return res.status(401).json({ message: "Missing required field(s)" }); 
+    }
+
+    const playlist = await db.getPlaylistByName(playlistName, creatorUserName);
+    if (!playlist) {
+        res.status(400).send({ message: "Playlist with this name doesn't exist." });
+        return;
+    }
+
+    const track = playlist.tracks.find(track => track.name === trackName && track.artist === artistName);
+    if (!track) {
+        return res.status(400).send({ message: "Track with this name doesn't exist." });
+    }
+
+    const trackIndex = playlist.tracks.findIndex(track => track.name === trackName && track.artist === artistName);
+
+    if (!track.tags) {
+        return res.status(400).send({ message: "This track has no tags." });
+    }
+    
+    const tagFound = playlist.tracks[trackIndex].tags.find(tag => tag === tagName);
+    if (!tagFound) {
+        return res.status(400).send({ message: "Tag with this name doesn't exist." });
+    }
+
+    const alreadyVoted = await db.getVote(playlistName, creatorUserName, trackName, artistName, tagFound, voterName);
+    if (alreadyVoted) {
+        return res.status(400).send({ message: "You cannot vote for the same tag twice." });
+    }
+
+    let upVoteBool = true;
+    if (upVote == "false") {
+        upVoteBool = false;
+    }
+
+    await db.storeVote(playlistName, creatorUserName, trackName, artistName, tagFound, voterName, upVoteBool);
+    res.status(200).json({ message: "Vote added successfully" });
+});
 
 module.exports = router;

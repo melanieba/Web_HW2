@@ -28,9 +28,17 @@ curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:
 curl -X POST --data "playlistName=playlist1&trackName=abcd&artistName=lala" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track
 curl -X POST --data "playlistName=playlist1&trackName=aacd&artistName=lala" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track
 
+curl -X POST --data "playlistName=playlist2&trackName=TRACK2&artistName=ARTIST2" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track
+
+
 curl -X DELETE --data "playlistName=playlist1&trackName=abcd&artistName=lala" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track
 
 curl -X PUT --data "playlistName=playlist1" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/reorder
 
 // add tag
-curl -X POST --data "tag="funky"&trackName="aacd"&artistName=lala&playlistName=playlist1" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/tag
+curl -X POST --data "tag=funky&trackName=aacd&artistName=lala&playlistName=playlist1" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/tag
+curl -X POST --data "tag=upbeat&trackName=TRACK1&artistName=ARTIST1&playlistName=playlist2" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/tag
+
+// vote on a tag
+curl -X POST --data "playlistName=playlist1&creatorUserName=Melanie&trackName=aacd&artistName=lala&tagName=funky&upVote=true" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/tag/vote
+curl -X POST --data "playlistName=playlist2&creatorUserName=Melanie&trackName=TRACK1&artistName=ARTIST1&tagName=upbeat&upVote=false" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/tag/vote
