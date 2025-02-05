@@ -191,5 +191,69 @@ router.put('/track/reorder', async (req, res) => {
     res.status(200).json({ message: "Tracks reordered successfully" });
 });
 
+router.post('/track/tag', async (req, res) => {
+    /*
+    Find playlist
+    Validation all of them + tag name should be there in params
+    Find track
+    Add to track a new tag
+    Call db.updateTracks, give all tracks to not rewrite
+    */
+    const authToken = req.cookies.authToken;
+    if (!authToken) {
+        return res.status(401).json({ message: "Not authorized" });
+    }
+
+    const userName = await db.getUserNameByAuthToken(authToken);
+    if (!userName) {
+        return res.status(401).json({ message: "Session expired or invalid authentication token" }); // ?
+    }
+
+    const { tag, playlistName, trackName, artistName } = req.body;
+
+    if (!trackName || !playlistName || !artistName || !tag) {
+        return res.status(400).json({ message: "Missing required field(s)" });
+    }
+
+    const playlist = await db.getPlaylistByName(playlistName, userName);
+    if (!playlist) {
+        res.status(400).send({ message: "Playlist with this name doesn't exist." });
+        return;
+    }
+
+    /* can anyone do this? 
+    if (playlist.creatorUserName !== userName) {
+        res.status(400).send({ message: "Only the creator can modify this playlist" });
+        return;
+    }
+    */
+    const track = playlist.tracks.find(track => track.name === trackName && track.artist === artistName);
+    if (!track) {
+        return res.status(400).send({ message: "Track with this name doesn't exist." });
+    }
+
+    if (track.tags.includes(tag)) {
+        res.status(400).send({ message: "Track already has this tag." });
+    }
+
+    const trackIndex = playlist.tracks.findIndex(track => track.name === trackName && track.artist === artistName);
+
+    let newTracks = playlist.tracks;
+    const tagString = String(tag).trim();
+    newTracks[trackIndex].tags.push(tagString);
+
+    await db.updatePlaylistTracks(userName, playlistName, newTracks);  
+    res.status(200).json({ message: "Tag added successfully" });
+});
+
+/*
+Upvote or downvote a tag for a specific track. Each user can only vote on a specific tag+track once.
+Post playlist/track/tag/vote
+Make new collection “votes”
+Call db getVote and give sames params except for upvote
+If something returns, then error that you can’t vote twice
+Every time someone votes, call in db storeVote
+Stores object that has playlistName, creatorUserName, trackName, artistName, voterUserName (from cookies), upvote (bool) -> 1 vote
+*/
 
 module.exports = router;
