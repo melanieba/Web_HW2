@@ -1,6 +1,7 @@
 
 const mongodb = require('mongodb');
 
+// database connection set up
 const mongoDBServerUrl = 'mongodb://localhost:27017';
 const dbName = 'hw2db';
 
@@ -156,8 +157,15 @@ async function storeVote(playlistName, creatorUserName, trackName, artistName, t
     });
 }
 
+async function getVotesForTag(tagName) {
+    return await sendCommand(async (db) => {
+        const query = { tag: tagName };
+        return await db.collection(votesCollectionName).find(query).toArray();
+    });
+}
+
 module.exports = {
     storeNewUser, findUserByUserName, storeLogin, getUserNameByAuthToken, deleteLogin,
     storePlaylist, getPlaylistByName, findPublicPlaylists, findPrivatePlaylists, addTrackToPlaylist, deleteTrackToPlaylist,
-    updatePlaylistTracks, updatePlaylistFlag, getVote, storeVote
+    updatePlaylistTracks, updatePlaylistFlag, getVote, storeVote, getVotesForTag
 };

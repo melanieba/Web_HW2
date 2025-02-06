@@ -42,3 +42,11 @@ curl -X POST --data "tag=upbeat&trackName=TRACK1&artistName=ARTIST1&playlistName
 // vote on a tag
 curl -X POST --data "playlistName=playlist1&creatorUserName=Melanie&trackName=aacd&artistName=lala&tagName=funky&upVote=true" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/tag/vote
 curl -X POST --data "playlistName=playlist2&creatorUserName=Melanie&trackName=TRACK1&artistName=ARTIST1&tagName=upbeat&upVote=false" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/tag/vote
+
+// get positive tags /goodTracks/:tagName
+curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/goodTracks/funky
+curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/goodTracks/upbeat
+
+
+curl -X POST --data "playlistName=playlist3&creatorUserName=Melanie&trackName=TRACK1&artistName=ARTIST1&tagName=funky&upVote=false" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/tag/vote
+curl -X POST --data "tag=funky&trackName=TRACK1&artistName=ARTIST1&playlistName=playlist3" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track/tag

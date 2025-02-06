@@ -239,11 +239,6 @@ router.post('/track/tag', async (req, res) => {
     res.status(200).json({ message: "Tag added successfully" });
 });
 
-/*
-Upvote or downvote a tag for a specific track. Each user can only vote on a specific tag+track once.
-Call db getVote and give sames params except for upvote
-If something returns, then error that you can’t vote twice
-*/
 router.post('/track/tag/vote', async (req, res) => {
     // get voterName from cookies
     const authToken = req.cookies.authToken;
@@ -258,12 +253,12 @@ router.post('/track/tag/vote', async (req, res) => {
 
     const { playlistName, creatorUserName, trackName, artistName, tagName, upVote } = req.body;
     if (!playlistName || !creatorUserName || !trackName || !artistName || !tagName || !upVote) {
-        return res.status(401).json({ message: "Missing required field(s)" }); 
+        return res.status(401).json({ message: "Missing required field(s)" }); // 401 ? 
     }
 
     const playlist = await db.getPlaylistByName(playlistName, creatorUserName);
     if (!playlist) {
-        res.status(400).send({ message: "Playlist with this name doesn't exist." });
+        res.status(400).send({ message: "Playlist with this name doesn't exist." }); // 401 ?
         return;
     }
 
@@ -295,6 +290,42 @@ router.post('/track/tag/vote', async (req, res) => {
 
     await db.storeVote(playlistName, creatorUserName, trackName, artistName, tagFound, voterName, upVoteBool);
     res.status(200).json({ message: "Vote added successfully" });
+});
+
+router.get('/goodTracks/:tagName', async (req, res) => {
+    const authToken = req.cookies.authToken;
+    if (!authToken) {
+        return res.status(401).json({ message: "Not authorized" });
+    }
+
+    const { tagName } = req.params;
+    if (!tagName) {
+        return res.status(400).json({ message: "Missing parameter: tagName" }); 
+    }
+    
+    // returns all votes for a specific tag
+    const allVotes = await db.getVotesForTag(tagName);
+ 
+    // now need to only keep the ones with positive votes
+    const votesMap = new Map();
+
+    allVotes.forEach(vote => {
+      let track = { playListName: vote.playlistName, creatorUserName: vote.creatorUserName, trackName: vote.trackName, 
+        artistName: vote.artistName };
+      let keyString = JSON.stringify(track);
+    
+      if (!votesMap.get(keyString)) {
+        // new row in map
+        votesMap.set(keyString, { totalVotes: (vote.upVote ? +1: -1), track: track });
+      } else {
+        // update row in map
+        votesMap.get(keyString).totalVotes = votesMap.get(keyString).totalVotes + (vote.upVote ? +1: -1);
+      }
+    });
+    
+    let onlyGoodTracks = Array.from(votesMap.values()).filter((record) => record.totalVotes > 0).map((record) => record.track);
+    console.log(onlyGoodTracks);
+    res.send(onlyGoodTracks);
 });
 
 module.exports = router;
