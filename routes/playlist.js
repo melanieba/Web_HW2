@@ -214,12 +214,6 @@ router.post('/track/tag', async (req, res) => {
         return;
     }
 
-    /* can anyone do this? 
-    if (playlist.creatorUserName !== userName) {
-        res.status(400).send({ message: "Only the creator can modify this playlist" });
-        return;
-    }
-    */
     const track = playlist.tracks.find(track => track.name === trackName && track.artist === artistName);
     if (!track) {
         return res.status(400).send({ message: "Track with this name doesn't exist." });
