@@ -51,6 +51,17 @@ router.get('/private', async (req, res) => {
     res.send(playLists);
 });
 
+router.get('/', async (req, res) => {
+    let userName = await auth.getLoggedUserName(req, res);
+    if (!userName) {
+        return;
+    }
+
+    let playLists = await db.findUserPlaylists(userName);
+
+    res.send(playLists);
+});
+
 router.put('/flag', async (req, res) => {
     const authToken = req.cookies.authToken;
     if (!authToken) {
@@ -63,7 +74,7 @@ router.put('/flag', async (req, res) => {
     }
 
     const { playlistName, isPrivate } = req.body;
-    if (!playlistName || !isPrivate) {
+    if (!playlistName || isPrivate === undefined) {
         return res.status(400).json({ message: "Missing required field(s)" });
     }
 
@@ -78,7 +89,7 @@ router.put('/flag', async (req, res) => {
         return;
     }
 
-    await db.updatePlaylistFlag(userName, playlistName, isPrivate.toLowerCase() === 'true');
+    await db.updatePlaylistFlag(userName, playlistName, typeof (isPrivate) == 'boolean' ? isPrivate : isPrivate.toLowerCase() === 'true');
     res.status(200).json({ message: "Flag updated successfully" });
 });
 
@@ -229,7 +240,7 @@ router.post('/track/tag', async (req, res) => {
     const tagString = String(tag).trim();
     newTracks[trackIndex].tags.push(tagString);
 
-    await db.updatePlaylistTracks(userName, playlistName, newTracks);  
+    await db.updatePlaylistTracks(userName, playlistName, newTracks);
     res.status(200).json({ message: "Tag added successfully" });
 });
 
@@ -242,7 +253,7 @@ router.post('/track/tag/vote', async (req, res) => {
 
     const voterName = await db.getUserNameByAuthToken(authToken);
     if (!voterName) {
-        return res.status(401).json({ message: "Session expired or invalid authentication token" }); 
+        return res.status(401).json({ message: "Session expired or invalid authentication token" });
     }
 
     const { playlistName, creatorUserName, trackName, artistName, tagName, upVote } = req.body;
@@ -266,7 +277,7 @@ router.post('/track/tag/vote', async (req, res) => {
     if (!track.tags) {
         return res.status(400).send({ message: "This track has no tags." });
     }
-    
+
     const tagFound = playlist.tracks[trackIndex].tags.find(tag => tag === tagName);
     if (!tagFound) {
         return res.status(400).send({ message: "Tag with this name doesn't exist." });
@@ -294,32 +305,48 @@ router.get('/goodTracks/:tagName', async (req, res) => {
 
     const { tagName } = req.params;
     if (!tagName) {
-        return res.status(400).json({ message: "Missing parameter: tagName" }); 
+        return res.status(400).json({ message: "Missing parameter: tagName" });
     }
-    
+
     // returns all votes for a specific tag
     const allVotes = await db.getVotesForTag(tagName);
- 
+
     // now need to only keep the ones with positive votes
     const votesMap = new Map();
 
     allVotes.forEach(vote => {
-      let track = { playListName: vote.playlistName, creatorUserName: vote.creatorUserName, trackName: vote.trackName, 
-        artistName: vote.artistName };
-      let keyString = JSON.stringify(track);
-    
-      if (!votesMap.get(keyString)) {
-        // new row in map
-        votesMap.set(keyString, { totalVotes: (vote.upVote ? +1: -1), track: track });
-      } else {
-        // update row in map
-        votesMap.get(keyString).totalVotes = votesMap.get(keyString).totalVotes + (vote.upVote ? +1: -1);
-      }
+        let track = {
+            playListName: vote.playlistName, creatorUserName: vote.creatorUserName, trackName: vote.trackName,
+            artistName: vote.artistName
+        };
+        let keyString = JSON.stringify(track);
+
+        if (!votesMap.get(keyString)) {
+            // new row in map
+            votesMap.set(keyString, { totalVotes: (vote.upVote ? +1 : -1), track: track });
+        } else {
+            // update row in map
+            votesMap.get(keyString).totalVotes = votesMap.get(keyString).totalVotes + (vote.upVote ? +1 : -1);
+        }
     });
-    
+
     let onlyGoodTracks = Array.from(votesMap.values()).filter((record) => record.totalVotes > 0).map((record) => record.track);
     console.log(onlyGoodTracks);
     res.send(onlyGoodTracks);
+});
+
+router.get('/:playListName', async (req, res) => {
+    let userName = await auth.getLoggedUserName(req, res);
+    if (!userName) {
+        return;
+    }
+
+    const { playListName } = req.params;
+    if (!playListName) {
+        return res.status(400).json({ message: "Missing parameter: playListName" });
+    }
+
+    res.send(await db.getPlaylistByName(playListName, userName));
 });
 
 module.exports = router;

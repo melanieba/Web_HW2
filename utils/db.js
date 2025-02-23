@@ -88,6 +88,12 @@ async function findPrivatePlaylists(username) {
     });
 }
 
+async function findUserPlaylists(username) {
+    return await sendCommand(async (db) => {
+        return (await db.collection(playlistsCollectionName).find({ creatorUserName: username })).toArray();
+    });
+}
+
 async function updatePlaylistFlag(userName, playlistName, isPrivate) {
     return await sendCommand(async (db) => {
         return await db.collection(playlistsCollectionName).updateOne({
@@ -167,5 +173,5 @@ async function getVotesForTag(tagName) {
 module.exports = {
     storeNewUser, findUserByUserName, storeLogin, getUserNameByAuthToken, deleteLogin,
     storePlaylist, getPlaylistByName, findPublicPlaylists, findPrivatePlaylists, addTrackToPlaylist, deleteTrackToPlaylist,
-    updatePlaylistTracks, updatePlaylistFlag, getVote, storeVote, getVotesForTag
+    updatePlaylistTracks, updatePlaylistFlag, getVote, storeVote, getVotesForTag, findUserPlaylists
 };

@@ -23,6 +23,8 @@ curl -X PUT --data "playlistName=playlist1&isPrivate=true" --cookie "authToken=9
 
 curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/public
 curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/private
+curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist
+curl --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/load/playlist1
 
 // add track
 curl -X POST --data "playlistName=playlist1&trackName=abcd&artistName=lala" --cookie "authToken=9c7533f0-ae37-4b6f-8e30-121938b18600" http://localhost:3000/playlist/track

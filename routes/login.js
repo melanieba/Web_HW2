@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const db = require('../utils/db');
-const {v4: uuidv4} = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 
 router.post('/', async (req, res) => {
   const { username, password } = req.body
@@ -27,7 +27,7 @@ router.post('/', async (req, res) => {
 
   res.cookie('authToken', authToken, { httpOnly: true, maxAge: 3600 * 1000 });
 
-  res.redirect(303, '/profile');
+  res.send({ message: "ok" });
 });
 
 
